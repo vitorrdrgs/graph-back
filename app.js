@@ -6,9 +6,9 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 
-var indexRouter = require('./src/routes/index');
-var usersRouter = require('./src/routes/users');
-var grafoRoutes = require('./src/routes/grafoRoutes');
+import indexRouter from './src/routes/index.js';
+import usersRouter from './src/routes/users.js';
+import grafoRoutes from './src/routes/grafoRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
