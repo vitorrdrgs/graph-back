@@ -1,5 +1,5 @@
 import MinHeap from "./min_heap.js"
-import GraphMatrix from "./graph_matrix.js";
+import GraphMatrix from "../models/graph_matrix.js";
 
 export function dijkstra(graph, source) {
     const n = graph.size();

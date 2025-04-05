@@ -1,5 +1,5 @@
-import { dijkstra } from "./dijkstra";
-import GraphMatrix from "./graph_matrix";
+import { dijkstra } from "../src/services/dijkstra.js";
+import GraphMatrix from "../src/models/graph_matrix.js";
 
 /*
 INPUT:

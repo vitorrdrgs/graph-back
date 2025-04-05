@@ -1,4 +1,4 @@
-import GraphMatrix from "./graph_matrix";
+import GraphMatrix from "../src/models/graph_matrix.js";
 
 test("Create a weighted graph", () => {
     const graph = new GraphMatrix([

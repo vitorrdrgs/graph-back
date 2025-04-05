@@ -1,4 +1,4 @@
-const Grafo = require('../models/Grafo');
+import Grafo from '../models/Grafo.js';
 
 const grafo = new Grafo();
 

@@ -1,4 +1,4 @@
-import MinHeap from "./min_heap.js";
+import MinHeap from "../src/services/min_heap.js";
 
 test("MinHeap extracts the element with smallest cost correctly", () => {
     const heap = new MinHeap();
