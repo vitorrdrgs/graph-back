@@ -10,14 +10,13 @@ export function bfs(graph, source) {
         const u = queue.shift();
         order.push(u);
 
-        for (let v = 0; v < n; v++) {
-            if (graph.edge(u, v) !== 0 && !visited[v]) {
+        for (const { vertex: v } of graph.neighbors(u)) {
+            if (!visited[v]) {
                 visited[v] = true;
                 queue.push(v);
             }
         }
     }
 
-    // Ordem de visita dos vértices
     return order;
 }

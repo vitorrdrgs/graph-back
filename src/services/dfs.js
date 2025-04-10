@@ -11,11 +11,14 @@ export function dfs(graph, source) {
             visited[u] = true;
             order.push(u);
 
-            for (let v = n - 1; v >= 0; v--) {
-                if (graph.edge(u, v) !== 0 && !visited[v]) {
-                    stack.push(v);
-                }
-            }
+            // Adiciona os vizinhos em ordem reversa para manter comportamento semelhante
+            const neighbors = graph.neighbors(u)
+                .map(({ vertex }) => vertex)
+                .filter(v => !visited[v])
+                // ordem decrescente para simular visita da esquerda pra direita
+                .sort((a, b) => b - a);
+
+            stack.push(...neighbors);
         }
     }
 

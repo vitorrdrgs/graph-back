@@ -33,6 +33,17 @@ class GraphMatrix{
         return this.#graph[u][v];
     }
 
+    neighbors(u) {
+        const result = [];
+        for (let v = 0; v < this.#graph.length; v++) {
+            const weight = this.#graph[u][v];
+            if (weight !== 0) {
+                result.push({ vertex: v, weight });
+            }
+        }
+        return result;
+    }
+
     size(){
         return this.#graph.length;
     }
