@@ -19,4 +19,3 @@ export function query(text, params){
 }
 
 export {pool};
-
