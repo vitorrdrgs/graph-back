@@ -1,0 +1,32 @@
+CREATE TYPE geometry AS ENUM ('triangle', 'circle', 'square');
+
+CREATE TABLE users (
+	id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	name TEXT NOT NULL,
+	email TEXT UNIQUE NOT NULL,
+	password TEXT NOT NULL
+);
+
+CREATE TABLE graphs (
+	id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	name TEXT NOT NULL,
+	date_modified TIMESTAMP NOT NULL DEFAULT NOW(),
+	user_id INTEGER REFERENCES users (id)
+);
+
+CREATE TABLE vertices (
+	id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	label TEXT NOT NULL,
+	number INTEGER NOT NULL,
+	color INTEGER NOT NULL,
+	geometry geometry NOT NULL,
+	pos POINT NOT NULL
+);
+
+CREATE TABLE edges (
+	id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	weight INTEGER NOT NULL,
+	graph_id INTEGER REFERENCES graphs (id),
+	origin_vertex INTEGER REFERENCES vertices (id),
+	dest_vertex INTEGER REFERENCES vertices (id)
+);
