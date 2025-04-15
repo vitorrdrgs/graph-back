@@ -5,6 +5,8 @@ import {dirname} from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
+import dotenvSafe from 'dotenv-safe';
+dotenvSafe.config();
 
 import indexRouter from './src/routes/index.js';
 import usersRouter from './src/routes/users.js';
