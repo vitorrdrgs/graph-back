@@ -1,15 +1,15 @@
 -- USERS
 INSERT INTO users (name, email, password) VALUES
-('Alice', 'alice@example.com', '$2b$10$7B2UeROm1z3X4jVUBK1GH.O5bdjuf7sR6EGJiHpOtul6NQU8Ha7Ay'),
-('Bob', 'bob@example.com', '$2b$10$NZZH8PFaPAZDyCAbMFB0GeExnz3W3GOrlIgbXZx7xEQxv5bxA3Eoy'),
-('Charlie', 'charlie@example.com', '$2b$10$Ax.0OHe12RjER1kPaINHYewAzrSuEd1OVaO1.qgPp1RoIfKNo1Cde'),
-('Diana', 'diana@example.com', '$2b$10$nHCh7sqjqhN94WxZcyTQfO45tpAOU8X8Y0xyTKkTQkKROhAO/z5K.'),
-('Eve', 'eve@example.com', '$2b$10$a9aHRPHFzRv05Mgf4Zw4rOWAwVltmLtGL0NK6kReAlhd7MopEidHS'),
-('Frank', 'frank@example.com', '$2b$10$XvD.kMZDJuQKx92fs4EZ5eBl8SSTBkY9S/U0SGBwW63cwxLF5AK0O'),
-('Grace', 'grace@example.com', '$2b$10$tEMBAXmAYUSQlQlObKfArO9ONrDyr13cmldfXJpmwd0GOFwKplrMa'),
-('Heidi', 'heidi@example.com', '$2b$10$wfdI5HZFww2eyFieyVCIvuE1ZJ6HZ3KN2jGq8Y1xYjSGJhRkSSuL6'),
-('Ivan', 'ivan@example.com', '$2b$10$nznkhBAYP7HwUeK9eFKrH.u7o6/h4eMFeTbnNE15nScS5yyRMK7Ma'),
-('Judy', 'judy@example.com', '$2b$10$rBQ/v/4voJj9X2gBrJvSlOsSPFrzwiUOZTntZrm.y1oFwKT3gmLfa');
+('Alice', 'alice@example.com', '$2b$10$pLOT2ZW/wDsPsWH76YBkCOuiZlc369FPCts9lj/Dhy8W8LAlVJBKy'),
+('Bob', 'bob@example.com', '$2b$10$/DYsrTzqJucw/xr1DT/wReV5Wcl2lCWtYioLo33iJw5MyWKlBzR/W'),
+('Charlie', 'charlie@example.com', '$2b$10$04ZRJ4AqFWdo0iKotGXmJe/dW9zntMyNwdWSVDsEQKJqEJxma9Nqm'),
+('Diana', 'diana@example.com', '$2b$10$E/3BJp60gKVVzPzoeomniuMQV60n0K8OcUx10fer37muth./cKlhy'),
+('Eve', 'eve@example.com', '$2b$10$j9b.ztJkxBPgHbSVWXq0wutAoJm8/1ADMueRrIAxPNTlMsQ42JlVi'),
+('Frank', 'frank@example.com', '$2b$10$MqLLawuIIKZzzivOYMznQ.HJl6r3xOXcYrw6iNV3PC6/FwfQAA1Rm'),
+('Grace', 'grace@example.com', '$2b$10$B3Qe2370TfkMl5KPqvWj9uJ1snuGEx0MoZnvyX8W.MKO6cwd8YnL.'),
+('Heidi', 'heidi@example.com', '$2b$10$BqZ7qjuyr8pi.ux.qDM9l.XgYkdzabNT9Mb8r4LiLpsaCXPkgj4ce'),
+('Ivan', 'ivan@example.com', '$2b$10$FgqAthBH3FeZI2bIEUmK4Ob.SZH6BbD8BNnB987yKl7ldBtKFjxh2'),
+('Judy', 'judy@example.com', '$2b$10$q28E9pcIld5jcroxV.RJm.TTO3HaxocWdVjiYSApVkZTynTU4qivy');
 
 -- GRAPHS
 INSERT INTO graphs (name, date_modified, user_id) VALUES
