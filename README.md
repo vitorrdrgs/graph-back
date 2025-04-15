@@ -5,13 +5,13 @@ docker compose up
 
 ## Users passwords
 
-* Alice:    pw1
-* Bob:      pw2
-* Charlie:  pw3
-* Diana:    pw4
-* Eve:      pw5
-* Frank:    pw6
-* Grace:    pw7
-* Heidi:    pw8
-* Ivan:     pw9
-* Judy:     pw10
+* Alice:    pass01
+* Bob:      pass02
+* Charlie:  pass03
+* Diana:    pass04
+* Eve:      pass05
+* Frank:    pass06
+* Grace:    pass07
+* Heidi:    pass08
+* Ivan:     pass09
+* Judy:     pass10
