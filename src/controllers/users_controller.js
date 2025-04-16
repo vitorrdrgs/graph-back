@@ -2,6 +2,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import Graph from '../models/graph.js';
 
  /**
  * Realiza o registro do usuário, verificando nome, e-mail e senha.
@@ -37,6 +38,7 @@ const register = async (req, res) => {
         const hash = await bcrypt.hash(password, salt);
 
         const user = new User(name, email, hash);
+        console.log(hash);
         await user.create();
 
         return res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso.' });
@@ -83,7 +85,14 @@ const login = async (req, res) => {
     }
 }
 
+const grafos = async (req, res) => {
+    const { id } = req.user_info;
+
+    Graph.get_graphs_by_user_id(id);
+}
+
 export default {
     register,
-    login
+    login,
+    grafos
 }
