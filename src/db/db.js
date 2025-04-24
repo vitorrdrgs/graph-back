@@ -1,21 +1,22 @@
-import pg from "pg"
+import pg from 'pg'
 
-const { Pool } = pg;
+const { Pool } = pg
 
 const pool = new Pool({
-    connectionString: "postgres://root:root@localhost:5432/db",
-});
+  connectionString: 'postgres://root:root@localhost:5432/db',
+})
 
-pool.on("connect", () => {
-    console.log("Base de dados conectado com sucesso!");
-});
+pool.on('connect', () => {
+  console.log('Base de dados conectado com sucesso!')
+})
 
-pool.on("error", (err) => {
-    console.log("Error ", err);
-});
+pool.on('error', (err) => {
+  console.log('Error ', err)
+})
 
-export function query(text, params){
-    return pool.query(text, params);
+export function query(text, params) {
+  return pool.query(text, params)
 }
 
-export {pool};
+export { pool }
+
