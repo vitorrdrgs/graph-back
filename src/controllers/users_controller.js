@@ -88,7 +88,14 @@ const login = async (req, res) => {
 const grafos = async (req, res) => {
     const { id } = req.user_info;
 
-    Graph.get_graphs_by_user_id(id);
+    try {
+        const graphs = await Graph.get_graphs_by_user_id(id);
+        const grafos_formatados = graphs.map(g => g.to_object());
+
+        return res.status(200).json({ grafos: grafos_formatados });
+    } catch (err) {
+        return res.status(500).json({ erro : 'Erro interno no servidor.'});
+    }
 }
 
 export default {
