@@ -10,7 +10,6 @@ dotenvSafe.config();
 
 import indexRouter from './src/routes/index.js';
 import usersRouter from './src/routes/users.js';
-import grafoRoutes from './src/routes/grafoRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,7 +28,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/grafo', grafoRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

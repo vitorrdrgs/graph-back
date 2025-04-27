@@ -1,60 +1,60 @@
 //edges = [[u1, v1, w1], ..., [un, vn, wn]]
-class GraphMatrix{
-    constructor(edges, n){
-        for(let i=0; i < n; ++i){
-            const row = [];
-            for(let j=0; j < n; ++j){
-                row.push(0);
-            }
-            this.#graph.push(row);
-        }
-
-        for(let i=0; i < edges.length; ++i){
-            if(edges[i].length >= 3){
-                this.insert(edges[i][0], edges[i][1], edges[i][2]);
-            }else{
-                this.insert(edges[i][0], edges[i][1]);
-            }
-        }
-    }
-    #graph = [];
-
-    insert(u, v, weight=1){
-        this.#graph[u][v] = weight;
-        this.#graph[v][u] = weight;
+class GraphMatrix {
+  constructor(edges, n) {
+    for (let i = 0; i < n; ++i) {
+      const row = []
+      for (let j = 0; j < n; ++j) {
+        row.push(0)
+      }
+      this.#graph.push(row)
     }
 
-    delete(u, v){
-        this.#graph[u][v] = 0;
-        this.#graph[v][u] = 0;
+    for (let i = 0; i < edges.length; ++i) {
+      if (edges[i].length >= 3) {
+        this.insert(edges[i][0], edges[i][1], edges[i][2])
+      } else {
+        this.insert(edges[i][0], edges[i][1])
+      }
     }
+  }
+  #graph = []
 
-    edge(u, v){
-        return this.#graph[u][v];
-    }
+  insert(u, v, weight = 1) {
+    this.#graph[u][v] = weight
+    this.#graph[v][u] = weight
+  }
 
-    neighbors(u) {
-        const result = [];
-        for (let v = 0; v < this.#graph.length; v++) {
-            const weight = this.#graph[u][v];
-            if (weight !== 0) {
-                result.push({ vertex: v, weight });
-            }
-        }
-        return result;
-    }
+  delete(u, v) {
+    this.#graph[u][v] = 0
+    this.#graph[v][u] = 0
+  }
 
-    size(){
-        return this.#graph.length;
-    }
+  edge(u, v) {
+    return this.#graph[u][v]
+  }
 
-    to_json(){
-        return JSON.stringify({graph: this.#graph});
+  neighbors(u) {
+    const result = []
+    for (let v = 0; v < this.#graph.length; v++) {
+      const weight = this.#graph[u][v]
+      if (weight !== 0) {
+        result.push({ vertex: v, weight })
+      }
     }
+    return result
+  }
 
-    to_object(){
-        return {graph: this.#graph}
-    }
+  size() {
+    return this.#graph.length
+  }
+
+  to_json() {
+    return JSON.stringify({ graph: this.#graph })
+  }
+
+  to_object() {
+    return { graph: this.#graph }
+  }
 }
 
-export default GraphMatrix;
+export default GraphMatrix

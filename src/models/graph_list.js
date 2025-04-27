@@ -1,52 +1,52 @@
 class GraphList {
-    #graph = [];
+  #graph = []
 
-    constructor(edges, n) {
-        for(let i = 0; i < n; i++){
-            this.#graph.push([]);
-        }
-
-        for(const edge of edges){
-            if(edge.length >= 3){
-                this.insert(edge[0], edge[1], edge[2]);
-            }else{
-                this.insert(edge[0], edge[1]);
-            }
-        }
+  constructor(edges, n) {
+    for (let i = 0; i < n; i++) {
+      this.#graph.push([])
     }
 
-    insert(u, v, weight = 1) {
-        this.#graph[u].push({ vertex: v, weight });
-        this.#graph[v].push({ vertex: u, weight });
+    for (const edge of edges) {
+      if (edge.length >= 3) {
+        this.insert(edge[0], edge[1], edge[2])
+      } else {
+        this.insert(edge[0], edge[1])
+      }
     }
+  }
 
-    delete(u, v) {
-        this.#graph[u] = this.#graph[u].filter(neigh => neigh.vertex !== v);
-        this.#graph[v] = this.#graph[v].filter(neigh => neigh.vertex !== u);
-    }
+  insert(u, v, weight = 1) {
+    this.#graph[u].push({ vertex: v, weight })
+    this.#graph[v].push({ vertex: u, weight })
+  }
 
-    neighbors(u) {
-        return this.#graph[u];
-    }
+  delete(u, v) {
+    this.#graph[u] = this.#graph[u].filter((neigh) => neigh.vertex !== v)
+    this.#graph[v] = this.#graph[v].filter((neigh) => neigh.vertex !== u)
+  }
 
-    edge(u, v) {
-        for(const neighbor of this.#graph[u]){
-            if(neighbor.vertex === v)return neighbor.weight;
-        }
-        return 0;
-    }
+  neighbors(u) {
+    return this.#graph[u]
+  }
 
-    size() {
-        return this.#graph.length;
+  edge(u, v) {
+    for (const neighbor of this.#graph[u]) {
+      if (neighbor.vertex === v) return neighbor.weight
     }
+    return 0
+  }
 
-    to_json() {
-        return JSON.stringify({ graph: this.#graph });
-    }
+  size() {
+    return this.#graph.length
+  }
 
-    to_object() {
-        return { graph: this.#graph };
-    }
+  to_json() {
+    return JSON.stringify({ graph: this.#graph })
+  }
+
+  to_object() {
+    return { graph: this.#graph }
+  }
 }
 
-export default GraphList;
+export default GraphList
