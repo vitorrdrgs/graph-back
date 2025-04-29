@@ -20,7 +20,8 @@ CREATE TABLE vertices (
 	number INTEGER NOT NULL,
 	color INTEGER NOT NULL,
 	geometry geometry NOT NULL,
-	pos POINT NOT NULL
+	pos POINT NOT NULL,
+	graph_id INTEGER REFERENCES graphs (id)
 );
 
 CREATE TABLE edges (

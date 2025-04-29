@@ -12,34 +12,28 @@ INSERT INTO users (name, email, password) VALUES
 ('Judy', 'judy@example.com', '$2b$10$q28E9pcIld5jcroxV.RJm.TTO3HaxocWdVjiYSApVkZTynTU4qivy');
 
 -- GRAPHS
-INSERT INTO graphs (name, date_modified, user_id) VALUES
-('Social Network', NOW(), 1),
-('Transport Map', NOW(), 2),
-('Family Tree', NOW(), 3),
-('Friend Connections', NOW(), 4),
-('Web of Trust', NOW(), 5);
+INSERT INTO graphs (name, user_id) VALUES
+('Social Network', 1),
+('Transport Map', 2),
+('Family Tree', 3),
+('Friend Connections', 4),
+('Web of Trust', 5);
 
--- VERTICES (starting from number 0)
--- The 'id' here will be auto-generated.
--- Assuming we will fetch ids for the edges section correctly.
-INSERT INTO vertices (label, number, color, geometry, pos) VALUES
-('Alice', 0, 123456, 'circle', '(0,0)'),
-('Bob', 1, 654321, 'square', '(1,2)'),
-('Charlie', 2, 112233, 'triangle', '(2,3)'),
-('Diana', 3, 445566, 'circle', '(3,4)'),
-('Eve', 4, 778899, 'square', '(4,5)'),
-('Frank', 5, 334455, 'triangle', '(5,6)'),
-('Grace', 6, 998877, 'circle', '(6,7)'),
-('Heidi', 7, 556677, 'triangle', '(7,8)'),
-('Ivan', 8, 223344, 'square', '(8,9)'),
-('Judy', 9, 667788, 'circle', '(9,10)');
+-- VERTICES
+-- Assume vertices 1–5 belong to Graph 1 (Social Network), 6–10 to Graph 2 (Transport Map)
+INSERT INTO vertices (label, number, color, geometry, pos, graph_id) VALUES
+('Alice', 0, 123456, 'circle', POINT(0,0), 1),
+('Bob', 1, 654321, 'square', POINT(100,200), 1),
+('Charlie', 2, 112233, 'triangle', POINT(200,300), 1),
+('Diana', 3, 445566, 'circle', POINT(300,400), 1),
+('Eve', 4, 778899, 'square', POINT(400,500), 1),
+('Frank', 5, 334455, 'triangle', POINT(500,600), 2),
+('Grace', 6, 998877, 'circle', POINT(600,700), 2),
+('Heidi', 7, 556677, 'triangle', POINT(700,800), 2),
+('Ivan', 8, 223344, 'square', POINT(800,900), 2),
+('Judy', 9, 667788, 'circle', POINT(900,1000), 2);
 
--- Now we need to use the correct `id`s for the vertices, which will be assigned automatically.
--- EDGES (connecting vertices in the graphs)
--- We now need to use the real auto-generated `id`s.
--- Let's assume vertex ids are assigned in order from 1 to 10.
-
--- Here we are using the correct `id`s for the `origin_vertex` and `dest_vertex`:
+-- EDGES
 INSERT INTO edges (weight, graph_id, origin_vertex, dest_vertex) VALUES
 (1, 1, 1, 2),
 (2, 1, 2, 3),
