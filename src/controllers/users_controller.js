@@ -101,45 +101,8 @@ const grafos = async (req, res) => {
   }
 }
 
-const grafo_id = async (req, res) => {
-  const { id } = req.params
-
-  try{
-    const graph = await Graph.get_graph_by_id(id)
-    const grafo_formatado = graph.to_object()
-
-    return res.status(200).json(grafo_formatado)
-  } catch(err){
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
-  }
-}
-
-const update_grafo_id = async (req, res) => {
-  const { id } = req.params
-
-  try{
-    const graph = await Graph.get_graph_by_id(id)
-    //graph.vertices[0].label = 'Alterado'
-    //graph.vertices[0].x = 777
-    //graph.vertices[0].y = 666
-
-    graph.vertices.push({ id: null, label: "C", number: 10, x: -300, y: -50, geometry: 'triangle', color: "#FFFFFF" })
-    graph.vertices.push({ id: null, label: "D", number: 11, x: -300, y: -50, geometry: 'triangle', color: "#FFFFFF" })
-
-    await graph.update()
-
-    const grafo_formatado = graph.to_object()
-
-    return res.status(200).json(grafo_formatado)
-  }catch(err){
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
-  }
-}
-
 export default {
   register,
   login,
   grafos,
-  grafo_id,
-  update_grafo_id
 }

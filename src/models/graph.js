@@ -36,71 +36,111 @@ export default class Graph {
   async update() {
     try {
       await query('BEGIN');
-  
+
       const res = await query(
         'UPDATE graphs SET name = $1, date_modified = NOW() WHERE id = $2 RETURNING *',
         [this.name, this.id]
       );
       const row = res.rows[0];
       this.date_modified = row.date_modified;
-  
-      const [previous_vertices_data, previous_edges_data] = await Promise.all([
+
+      const [previousVerticesData, previousEdgesData] = await Promise.all([
         query('SELECT * FROM vertices WHERE graph_id = $1', [this.id]),
         query('SELECT * FROM edges WHERE graph_id = $1', [this.id])
       ]);
-  
+
+      const previousVertices = new Map(previousVerticesData.rows.map(v => [v.id, v]));
+      const previousEdges = new Map(previousEdgesData.rows.map(e => [e.id, e]));
+
+      const vertexInserts = [];
+      const vertexUpdates = [];
+
       for (const vertex of this.vertices) {
         if (vertex.id === null) {
-          const res = await query(
-            'INSERT INTO vertices (label, number, color, geometry, pos, graph_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [vertex.label, vertex.number, parseInt(vertex.color.slice(1), 16), vertex.geometry, `(${vertex.x},${vertex.y})`, this.id]
-          );
-          vertex.id = res.rows[0].id;
+          vertexInserts.push(vertex);
         } else {
-          await query(
-            'UPDATE vertices SET label = $1, number = $2, color = $3, geometry = $4, pos = $5 WHERE id = $6',
-            [vertex.label, vertex.number, parseInt(vertex.color.slice(1), 16), vertex.geometry, `(${vertex.x},${vertex.y})`, vertex.id]
-          );
+          const prev = previousVertices.get(vertex.id);
+          if (!prev ||
+            vertex.label !== prev.label ||
+            vertex.number !== prev.number ||
+            parseInt(vertex.color.slice(1), 16) !== prev.color ||
+            vertex.geometry !== prev.geometry ||
+            `(${vertex.x},${vertex.y})` !== prev.pos) {
+            vertexUpdates.push(vertex);
+          }
         }
       }
-  
+
+      if (vertexInserts.length > 0) {
+        const values = [];
+        const params = [];
+        let i = 1;
+        for (const v of vertexInserts) {
+          values.push(`($${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++})`);
+          params.push(v.label, v.number, parseInt(v.color.slice(1), 16), v.geometry, `(${v.x},${v.y})`, this.id);
+        }
+        const insertRes = await query(
+          `INSERT INTO vertices (label, number, color, geometry, pos, graph_id) VALUES ${values.join(', ')} RETURNING id`,
+          params
+        );
+        for (let j = 0; j < vertexInserts.length; j++) {
+          vertexInserts[j].id = insertRes.rows[j].id;
+        }
+      }
+
+      await Promise.all(vertexUpdates.map(v =>
+        query(
+          'UPDATE vertices SET label = $1, number = $2, color = $3, geometry = $4, pos = $5 WHERE id = $6',
+          [v.label, v.number, parseInt(v.color.slice(1), 16), v.geometry, `(${v.x},${v.y})`, v.id]
+        )
+      ));
+
+      const edgeInserts = [];
+      const edgeUpdates = [];
+
       for (const edge of this.edges) {
         if (edge.id === null) {
-          const res = await query(
-            'INSERT INTO edges (weight, origin_vertex, dest_vertex, graph_id) VALUES ($1, $2, $3, $4) RETURNING *',
-            [edge.weight, edge.origin_vertex, edge.dest_vertex, this.id]
-          );
-          edge.id = res.rows[0].id;
+          edgeInserts.push(edge);
         } else {
-          await query(
-            'UPDATE edges SET weight = $1 WHERE id = $2',
-            [edge.weight, edge.id]
-          );
+          const prev = previousEdges.get(edge.id);
+          if (!prev || edge.weight !== prev.weight) {
+            edgeUpdates.push(edge);
+          }
         }
       }
-  
-      const previous_vertices_rows = previous_vertices_data.rows;
-      const previous_edges_rows = previous_edges_data.rows;
-  
-      const curr_vertices_ids = this.vertices.filter(v => v.id !== null).map(v => v.id);
-      const curr_edges_ids = this.edges.filter(e => e.id !== null).map(e => e.id);
-  
-      const vertices_delete = previous_vertices_rows
-        .filter(v => !curr_vertices_ids.includes(v.id))
-        .map(v => v.id);
-  
-      const edges_delete = previous_edges_rows
-        .filter(e => !curr_edges_ids.includes(e.id))
-        .map(e => e.id);
-  
-      for (const id of vertices_delete) {
-        await query('DELETE FROM vertices WHERE id = $1', [id]);
+
+      if (edgeInserts.length > 0) {
+        const values = [];
+        const params = [];
+        let i = 1;
+        for (const e of edgeInserts) {
+          values.push(`($${i++}, $${i++}, $${i++}, $${i++})`);
+          params.push(e.weight, e.origin_vertex, e.dest_vertex, this.id);
+        }
+        const insertRes = await query(
+          `INSERT INTO edges (weight, origin_vertex, dest_vertex, graph_id) VALUES ${values.join(', ')} RETURNING id`,
+          params
+        );
+        for (let j = 0; j < edgeInserts.length; j++) {
+          edgeInserts[j].id = insertRes.rows[j].id;
+        }
       }
-  
-      for (const id of edges_delete) {
-        await query('DELETE FROM edges WHERE id = $1', [id]);
-      }
-  
+
+      await Promise.all(edgeUpdates.map(e =>
+        query('UPDATE edges SET weight = $1 WHERE id = $2', [e.weight, e.id])
+      ));
+
+      const currentVertexIds = this.vertices.filter(v => v.id !== null).map(v => v.id);
+      const currentEdgeIds = this.edges.filter(e => e.id !== null).map(e => e.id);
+
+      const deletedVertexIds = [...previousVertices.keys()].filter(id => !currentVertexIds.includes(id));
+      const deletedEdgeIds = [...previousEdges.keys()].filter(id => !currentEdgeIds.includes(id));
+
+      await Promise.all([
+        ...deletedVertexIds.map(id => query('DELETE FROM vertices WHERE id = $1', [id])),
+        ...deletedEdgeIds.map(id => query('DELETE FROM edges WHERE id = $1', [id]))
+      ]);
+
       await query('COMMIT');
       return this;
     } catch (err) {
@@ -109,6 +149,7 @@ export default class Graph {
       return null;
     }
   }
+
 
   static async get_graph_by_id(id) {
     const [graph_data, vertices_data, edges_data] = await Promise.all(
