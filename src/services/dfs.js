@@ -1,27 +1,34 @@
 export function dfs(graph, source) {
   const n = graph.size()
   const visited = new Array(n).fill(false)
-  const stack = [source]
+  const parent = new Array(n).fill(-1)
+  const cost = new Array(n).fill(Number.MAX_VALUE)
   const order = []
 
+  const stack = [{ vertex: source, depth: 0 }]
+  parent[source] = source
+  cost[source] = 0
+
   while (stack.length > 0) {
-    const u = stack.pop()
+    const { vertex: u, depth } = stack.pop()
 
     if (!visited[u]) {
       visited[u] = true
+      cost[u] = depth
       order.push(u)
 
-      // Adiciona os vizinhos em ordem reversa para manter comportamento semelhante
       const neighbors = graph
         .neighbors(u)
         .map(({ vertex }) => vertex)
         .filter((v) => !visited[v])
-        // ordem decrescente para simular visita da esquerda pra direita
         .sort((a, b) => b - a)
 
-      stack.push(...neighbors)
+      for (const v of neighbors) {
+        if (parent[v] === -1) parent[v] = u
+        stack.push({ vertex: v, depth: depth + 1 })
+      }
     }
   }
 
-  return order
+  return { parent, cost, order }
 }

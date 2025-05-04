@@ -12,8 +12,10 @@ test('DFS traversal from node 0 in graph list', () => {
 
   const graph_list = new GraphList(edges, 5)
 
-  const order = dfs(graph_list, 0)
+  const { parent, cost, order } = dfs(graph_list, 0)
 
+  expect(parent).toEqual([0, 0, 1, 2, 0])
+  expect(cost).toEqual([0, 1, 2, 3, 1])
   expect(order).toEqual([0, 1, 2, 3, 4])
 })
 
@@ -27,7 +29,9 @@ test('DFS traversal from node 0 in graph matrix', () => {
 
   const graph_matrix = new GraphMatrix(edges, 5)
 
-  const order = dfs(graph_matrix, 0)
+  const { parent, cost, order } = dfs(graph_matrix, 0)
 
+  expect(parent).toEqual([0, 0, 1, 2, 0])
+  expect(cost).toEqual([0, 1, 2, 3, 1])
   expect(order).toEqual([0, 1, 2, 3, 4])
 })
