@@ -171,7 +171,7 @@ export default class Graph {
         number: vertex.number,
         x: vertex.pos.x,
         y: vertex.pos.y,
-        color: '#' + vertex.color.toString(16),
+        color: '#' + vertex.color.toString(16).padStart(6, '0'),
         geometry: vertex.geometry,
       }
     ));

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import dotenvSafe from 'dotenv-safe';
+import cors from 'cors';
 dotenvSafe.config();
 
 import indexRouter from './src/routes/index.js';
@@ -17,6 +18,7 @@ const __dirname = dirname(__filename);
 
 var app = express();
 
+app.use(cors());
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
