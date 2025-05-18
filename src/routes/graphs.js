@@ -14,7 +14,8 @@ router.post('/create', middleware_token_verify, graphs_controller.create_graph)
 //router.get('/dfs', graphs_controller.dfs)
 router.post('/dijkstra/matrix', middleware_search_algorithms_input_verify, graphs_controller.dijkstra_matrix)
 router.post('/dijkstra/list', middleware_search_algorithms_input_verify, graphs_controller.dijkstra_list)
-//router.get('/matrix', graphs_controller.matrix)
-//router.get('/list', graphs_controller.list)
+
+router.post('/matrix', graphs_controller.adjacency_matrix)
+router.post('/list', graphs_controller.adjacency_list)
 
 export default router
