@@ -3,7 +3,7 @@ import pg from 'pg'
 const { Pool } = pg
 
 const pool = new Pool({
-  connectionString: 'postgres://root:root@localhost:5432/db',
+  connectionString: 'postgres://root:root@postgres:5432/db',
 })
 
 pool.on('connect', () => {
