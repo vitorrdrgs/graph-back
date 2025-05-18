@@ -1,4 +1,4 @@
-import { query } from '../db/db.js'
+import { pool, query } from '../db/db.js'
 
 export default class Graph {
   id
@@ -34,119 +34,142 @@ export default class Graph {
   }
 
   async update() {
-    try {
-      await query('BEGIN');
+    const client = await pool.connect();
 
-      const res = await query(
+    try {
+      await client.query('BEGIN');
+
+      // Update graph metadata
+      const res = await client.query(
         'UPDATE graphs SET name = $1, date_modified = NOW() WHERE id = $2 RETURNING *',
         [this.name, this.id]
       );
-      const row = res.rows[0];
-      this.date_modified = row.date_modified;
+      this.date_modified = res.rows[0].date_modified;
 
-      const [previousVerticesData, previousEdgesData] = await Promise.all([
-        query('SELECT * FROM vertices WHERE graph_id = $1', [this.id]),
-        query('SELECT * FROM edges WHERE graph_id = $1', [this.id])
+      // Fetch previous vertices and edges ordered by id
+      const [prevVerticesRes, prevEdgesRes] = await Promise.all([
+        client.query('SELECT * FROM vertices WHERE graph_id = $1 ORDER BY id', [this.id]),
+        client.query('SELECT * FROM edges WHERE graph_id = $1 ORDER BY id', [this.id]),
       ]);
 
-      const previousVertices = new Map(previousVerticesData.rows.map(v => [v.id, v]));
-      const previousEdges = new Map(previousEdgesData.rows.map(e => [e.id, e]));
+      const prevVertices = new Map(prevVerticesRes.rows.map(v => [v.id, v]));
+      const prevEdges = new Map(prevEdgesRes.rows.map(e => [e.id, e]));
 
+      // Detect new and updated vertices
       const vertexInserts = [];
       const vertexUpdates = [];
 
       for (const vertex of this.vertices) {
-        if (vertex.id === null) {
+        if (vertex.id == null) {
           vertexInserts.push(vertex);
         } else {
-          const prev = previousVertices.get(vertex.id);
-          if (!prev ||
+          const prev = prevVertices.get(vertex.id);
+          const colorInt = parseInt(vertex.color.slice(1), 16);
+          const posStr = `(${vertex.x},${vertex.y})`;
+          if (
+            !prev ||
             vertex.label !== prev.label ||
             vertex.number !== prev.number ||
-            parseInt(vertex.color.slice(1), 16) !== prev.color ||
+            colorInt !== prev.color ||
             vertex.geometry !== prev.geometry ||
-            `(${vertex.x},${vertex.y})` !== prev.pos) {
+            posStr !== prev.pos
+          ) {
             vertexUpdates.push(vertex);
           }
         }
       }
 
+      // Batch insert new vertices
       if (vertexInserts.length > 0) {
-        const values = [];
-        const params = [];
-        let i = 1;
-        for (const v of vertexInserts) {
-          values.push(`($${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++})`);
-          params.push(v.label, v.number, parseInt(v.color.slice(1), 16), v.geometry, `(${v.x},${v.y})`, this.id);
-        }
-        const insertRes = await query(
-          `INSERT INTO vertices (label, number, color, geometry, pos, graph_id) VALUES ${values.join(', ')} RETURNING id`,
+        const values = vertexInserts
+          .map((_, i) => `($${i * 6 + 1}, $${i * 6 + 2}, $${i * 6 + 3}, $${i * 6 + 4}, $${i * 6 + 5}, $${i * 6 + 6})`)
+          .join(', ');
+        const params = vertexInserts.flatMap(v => [
+          v.label,
+          v.number,
+          parseInt(v.color.slice(1), 16),
+          v.geometry,
+          `(${v.x},${v.y})`,
+          this.id,
+        ]);
+
+        const insertRes = await client.query(
+          `INSERT INTO vertices (label, number, color, geometry, pos, graph_id) VALUES ${values} RETURNING id`,
           params
         );
-        for (let j = 0; j < vertexInserts.length; j++) {
-          vertexInserts[j].id = insertRes.rows[j].id;
-        }
+        insertRes.rows.forEach((row, idx) => {
+          vertexInserts[idx].id = row.id;
+        });
       }
 
-      await Promise.all(vertexUpdates.map(v =>
-        query(
+      // Update existing vertices
+      for (const v of vertexUpdates) {
+        await client.query(
           'UPDATE vertices SET label = $1, number = $2, color = $3, geometry = $4, pos = $5 WHERE id = $6',
           [v.label, v.number, parseInt(v.color.slice(1), 16), v.geometry, `(${v.x},${v.y})`, v.id]
-        )
-      ));
+        );
+      }
 
+      // Detect new and updated edges
       const edgeInserts = [];
       const edgeUpdates = [];
 
       for (const edge of this.edges) {
-        if (edge.id === null) {
+        if (edge.id == null) {
           edgeInserts.push(edge);
         } else {
-          const prev = previousEdges.get(edge.id);
+          const prev = prevEdges.get(edge.id);
           if (!prev || edge.weight !== prev.weight) {
             edgeUpdates.push(edge);
           }
         }
       }
 
+      // Batch insert edges
       if (edgeInserts.length > 0) {
-        const values = [];
-        const params = [];
-        let i = 1;
-        for (const e of edgeInserts) {
-          values.push(`($${i++}, $${i++}, $${i++}, $${i++})`);
-          params.push(e.weight, e.origin_vertex, e.dest_vertex, this.id);
-        }
-        const insertRes = await query(
-          `INSERT INTO edges (weight, origin_vertex, dest_vertex, graph_id) VALUES ${values.join(', ')} RETURNING id`,
+        const values = edgeInserts
+          .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
+          .join(', ');
+        const params = edgeInserts.flatMap(e => [e.weight, e.origin_vertex, e.dest_vertex, this.id]);
+
+        const insertRes = await client.query(
+          `INSERT INTO edges (weight, origin_vertex, dest_vertex, graph_id) VALUES ${values} RETURNING id`,
           params
         );
-        for (let j = 0; j < edgeInserts.length; j++) {
-          edgeInserts[j].id = insertRes.rows[j].id;
-        }
+        insertRes.rows.forEach((row, idx) => {
+          edgeInserts[idx].id = row.id;
+        });
       }
 
-      await Promise.all(edgeUpdates.map(e =>
-        query('UPDATE edges SET weight = $1 WHERE id = $2', [e.weight, e.id])
-      ));
+      // Update existing edges
+      for (const e of edgeUpdates) {
+        await client.query('UPDATE edges SET weight = $1 WHERE id = $2', [e.weight, e.id]);
+      }
 
-      const currentVertexIds = this.vertices.filter(v => v.id !== null).map(v => v.id);
-      const currentEdgeIds = this.edges.filter(e => e.id !== null).map(e => e.id);
+      // Delete removed vertices and edges
+      const currentVertexIds = this.vertices.filter(v => v.id != null).map(v => v.id);
+      const currentEdgeIds = this.edges.filter(e => e.id != null).map(e => e.id);
 
-      const deletedVertexIds = [...previousVertices.keys()].filter(id => !currentVertexIds.includes(id));
-      const deletedEdgeIds = [...previousEdges.keys()].filter(id => !currentEdgeIds.includes(id));
+      const deletedVertexIds = [...prevVertices.keys()].filter(id => !currentVertexIds.includes(id));
+      const deletedEdgeIds = [...prevEdges.keys()].filter(id => !currentEdgeIds.includes(id));
 
-      await Promise.all([
-        ...deletedVertexIds.map(id => query('DELETE FROM vertices WHERE id = $1', [id])),
-        ...deletedEdgeIds.map(id => query('DELETE FROM edges WHERE id = $1', [id]))
-      ]);
+      for (const id of deletedVertexIds) {
+        await client.query('DELETE FROM vertices WHERE id = $1', [id]);
+      }
 
-      await query('COMMIT');
+      for (const id of deletedEdgeIds) {
+        await client.query('DELETE FROM edges WHERE id = $1', [id]);
+      }
+
+      await client.query('COMMIT');
+
       return this;
     } catch (err) {
+      await client.query('ROLLBACK');
       console.error('Erro ao atualizar grafo:', err);
-      await query('ROLLBACK');
       return null;
+    } finally {
+      client.release();
     }
   }
 
@@ -161,7 +184,7 @@ export default class Graph {
     )
 
     const graph_row = graph_data.rows[0]
-    if(!graph_row) return null
+    if (!graph_row) return null
 
     const vertices_rows = vertices_data.rows
     const vertices = vertices_rows.map((vertex) => (
