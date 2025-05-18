@@ -161,10 +161,57 @@ const create_graph = async (req, res) => {
   }
 }
 
+/**
+ * Generates an adjacency matrix representation of a graph.
+ *
+ * @route POST /graphs/adjacency-matrix
+ * @param {Request} req - Request body must include:
+ *   - { edges: [ [u, v, weight], ... ], n: number }.
+ * @param {Response} res - Returns the adjacency matrix representation of the graph.
+ * @returns {200} JSON with the matrix as { graph: number[][] }.
+ * @returns {500} On internal server error.
+ */
+const adjacency_matrix = async (req, res) => {
+  const { edges, n } = req.body;
+
+  try {
+    const graph = new GraphMatrix(edges, n);
+    console.log(graph);
+
+    return res.status(200).json(graph.to_object());
+  } catch {
+    return res.status(500).json({ erro: 'erro interno no servidor. ' });
+  }
+};
+
+/**
+ * Generates an adjacency list representation of a graph.
+ *
+ * @route POST /graphs/adjacency-list
+ * @param {Request} req - Request body must include:
+ *   - { edges: [ [u, v, weight], ... ], n: number }.
+ * @param {Response} res - Returns the adjacency list representation of the graph.
+ * @returns {200} JSON with the list as { graph: Array<Array<{ vertex: number, weight: number }>> }.
+ * @returns {500} On internal server error.
+ */
+const adjacency_list = async (req, res) => {
+  const { edges, n } = req.body;
+
+  try {
+    const graph = new GraphList(edges, n);
+
+    return res.status(200).json(graph.to_object());
+  } catch {
+    return res.status(500).json({ erro: 'erro interno no servidor. ' });
+  }
+};
+
 export default {
   grafo_id,
   update_grafo_id,
   dijkstra_list,
   dijkstra_matrix,
-  create_graph
+  create_graph,
+  adjacency_matrix,
+  adjacency_list
 }
