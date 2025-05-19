@@ -1,6 +1,6 @@
 export const middleware_search_algorithms_input_verify = (req, res, next) => {
   const { edges, n, source, destination } = req.body;
-  const {algorithm, method} = req.params
+  const { algorithm } = req.params
 
   if (
     !Array.isArray(edges) ||
@@ -17,10 +17,6 @@ export const middleware_search_algorithms_input_verify = (req, res, next) => {
 
   if (algorithm !== 'dijkstra' && algorithm !== 'bfs' && algorithm !== 'dfs') {
     return res.status(400).json({ error: 'Algoritmo inválido' });
-  }
-
-  if (method !== 'matrix'&& method !== 'list') {
-    return res.status(400).json({ error: 'Método inválido' });
   }
 
   next();
