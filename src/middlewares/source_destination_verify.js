@@ -1,5 +1,6 @@
 export const middleware_search_algorithms_input_verify = (req, res, next) => {
   const { edges, n, source, destination } = req.body;
+  const { algorithm } = req.params
 
   if (
     !Array.isArray(edges) ||
@@ -12,6 +13,10 @@ export const middleware_search_algorithms_input_verify = (req, res, next) => {
 
   if (source < 0 || source >= n || destination < 0 || destination >= n) {
     return res.status(400).json({ error: 'Source ou destination estão fora do intervalo permitido.' });
+  }
+
+  if (algorithm !== 'dijkstra' && algorithm !== 'bfs' && algorithm !== 'dfs') {
+    return res.status(400).json({ error: 'Algoritmo inválido' });
   }
 
   next();

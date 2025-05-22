@@ -7,6 +7,7 @@ import { follow_path } from '../services/follow_path.js'
 import { dfs } from '../services/dfs.js'
 import { bfs } from '../services/bfs.js'
 import { dijkstra } from '../services/dijkstra.js'
+import { dot } from '../services/dot.js'
 
 const ensure_user_owns_graph = (graph, user_id) => {
   if (!graph) throw new Error('NOT_FOUND')
@@ -88,48 +89,60 @@ const update_grafo_id = async (req, res) => {
 }
 
 /**
- * Calculates the shortest path between source and destination using Dijkstra's algorithm on an adjacency list.
+ * Searches for a path between two nodes in a graph using the specified algorithm and graph representation.
  *
- * @route POST /graphs/dijkstra/list
- * @param {Request} req - Request body must contain { edges, n, source, destination }.
- * @param {Response} res - Returns the shortest path and cost.
- * @returns {200} Path and cost.
- * @returns {500} On internal server error.
- */
-const dijkstra_list = async (req, res) => {
-  const {edges, n, source, destination} = req.body
-    
-  try{
-    const graph = new GraphList(edges, n)
-
-    const parent_cost = dijkstra(graph, source)
-    const path_cost = follow_path(parent_cost, destination)
-
-    return res.status(200).json(path_cost)
-  }catch(err){
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
-  }
-}
-
-/**
- * Calculates the shortest path between source and destination using Dijkstra's algorithm on an adjacency matrix.
+ * @route POST /:algorithm/:method
+ * @middleware Requires middleware_search_algorithms_input_verify to validate inputs.
+ * @middleware Requires middleware_method_param_verify to validate method.
  *
- * @route POST /graphs/dijkstra/matrix
- * @param {Request} req - Request body must contain { edges, n, source, destination }.
- * @param {Response} res - Returns the shortest path and cost.
- * @returns {200} Path and cost.
+ * @param {Request} req - Express request object.
+ * @param {Object} req.body - Graph data.
+ * @param {Array<Array<number>>} req.body.edges - Edges of the graph in [from, to, weight] format.
+ * @param {number} req.body.n - Number of nodes in the graph.
+ * @param {number} req.body.source - Source node index.
+ * @param {number} req.body.destination - Destination node index.
+ * @param {Object} req.params - URL parameters.
+ * @param {string} req.params.algorithm - One of "dijkstra", "bfs", or "dfs".
+ * @param {string} req.params.method - One of "matrix" (adjacency matrix) or "list" (adjacency list).
+ *
+ * @param {Response} res - Express response object.
+ * @returns {200} Path and cost as returned by `follow_path`, e.g. { path: [0,1,2], cost: 4 }.
  * @returns {500} On internal server error.
+ *
+ * @example
+ * POST /dijkstra/list
+ * {
+ *   "edges": [[0, 1, 2], [1, 2, 2]],
+ *   "n": 3,
+ *   "source": 0,
+ *   "destination": 2
+ * }
+ * => Response: { path: [0, 1, 2], cost: 4 }
  */
-const dijkstra_matrix = async (req, res) => {
+const search_path = async (req, res) => {
   const {edges, n, source, destination} = req.body
-    
+  const {algorithm, method} = req.params
+
+  const methodMap = {
+    list: GraphList,
+    matrix: GraphMatrix,
+  };
+
+  const algorithmMap = {
+    dijkstra,
+    bfs,
+    dfs,
+  };
+
   try{
-    const graph = new GraphMatrix(edges, n)
+    const GraphConstructor = methodMap[method];
+    const algorithmFn = algorithmMap[algorithm];
 
-    const parent_cost = dijkstra(graph, source)
-    const path_cost = follow_path(parent_cost, destination)
+    const graph = new GraphConstructor(edges, n);
+    const parentCost = algorithmFn(graph, source);
+    const pathCost = follow_path(parentCost, destination);
 
-    return res.status(200).json(path_cost)
+    return res.status(200).json(pathCost);
   }catch(err){
     return res.status(500).json({ erro: 'erro interno no servidor. '})
   }
@@ -206,12 +219,58 @@ const adjacency_list = async (req, res) => {
   }
 };
 
+/**
+ * Generates a DOT format string for visualizing an **undirected** graph using Graphviz.
+ *
+ * @route POST /dot/:method
+ * @middleware Requires middleware_method_param_verify to validate method.
+ *
+ * @param {Request} req - Express request object.
+ * @param {Object} req.body - Graph data.
+ * @param {Array<Array<number>>} req.body.edges - Edges of the graph in [from, to, weight] format.
+ * @param {number} req.body.n - Number of nodes in the graph.
+ * @param {Object} req.params - URL parameters.
+ * @param {string} req.params.method - One of "matrix" (adjacency matrix) or "list" (adjacency list).
+ *
+ * @param {Response} res - Express response object.
+ * @returns {200} JSON object containing the DOT format string, e.g. { dot: "graph { ... }" }.
+ * @returns {500} On internal server error.
+ *
+ * @example
+ * POST /dot/list
+ * {
+ *   "edges": [[0, 1, 2], [1, 2, 3]],
+ *   "n": 3
+ * }
+ * => Response: { dot: "graph G {\n  0 -- 1;\n  1 -- 2;\n}" }
+ */
+const generate_dot = async (req, res) => {
+  const { edges, n } = req.body
+  const { method } = req.params
+
+  const methodMap = {
+    list: GraphList,
+    matrix: GraphMatrix,
+  }
+
+  try {
+    const GraphConstructor = methodMap[method]
+    const graph = new GraphConstructor(edges, n)
+
+    const result = dot(graph)
+
+    return res.status(200).json({ dot: result })
+  } catch {
+    return res.status(500).json({ erro: 'erro interno no servidor. '})
+  }
+}
+
 export default {
   grafo_id,
   update_grafo_id,
-  dijkstra_list,
-  dijkstra_matrix,
+  search_path,
   create_graph,
   adjacency_matrix,
-  adjacency_list
+  adjacency_list,
+  generate_dot
 }
