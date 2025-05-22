@@ -31,18 +31,22 @@ const grafo_id = async (req, res) => {
 
   console.log(user_id)
 
-  try{
+  try {
     const graph = await Graph.get_graph_by_id(graph_id)
-    
+
     ensure_user_owns_graph(graph, user_id)
 
     const grafo_formatado = graph.to_object()
 
     return res.status(200).json(grafo_formatado)
-  } catch(err){
-    if (err.message === 'NOT_FOUND') return res.status(404).json({ erro: 'não existe um grafo com esse id'})
-    if (err.message === 'FORBIDDEN') return res.status(403).json({ erro: 'esse grafo não pertence a esse usuário'})
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
+  } catch (err) {
+    if (err.message === 'NOT_FOUND')
+      return res.status(404).json({ erro: 'não existe um grafo com esse id' })
+    if (err.message === 'FORBIDDEN')
+      return res
+        .status(403)
+        .json({ erro: 'esse grafo não pertence a esse usuário' })
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
 }
 
@@ -62,28 +66,35 @@ const grafo_id = async (req, res) => {
 const update_grafo_id = async (req, res) => {
   const graph_id = req.params.id
   const user_id = req.user_info.id
+  const { vertices, edges } = req.body
 
-  try{
+  if (!Array.isArray(vertices) || !Array.isArray(edges)) {
+    return res
+      .status(400)
+      .json({ erro: 'vertices e edges precisam ser arrays válidos' })
+  }
+
+  try {
     const graph = await Graph.get_graph_by_id(graph_id)
 
     ensure_user_owns_graph(graph, user_id)
 
-    //graph.vertices[0].label = 'Alterado'
-    //graph.vertices[0].x = 777
-    //graph.vertices[0].y = 666
-
-    graph.vertices.push({ id: null, label: "C", number: 10, x: -300, y: -50, geometry: 'triangle', color: "#FFFFFF" })
-    graph.vertices.push({ id: null, label: "D", number: 11, x: -300, y: -50, geometry: 'triangle', color: "#FFFFFF" })
+    graph.vertices = vertices
+    graph.edges = edges
 
     await graph.update()
 
     const grafo_formatado = graph.to_object()
 
     return res.status(200).json(grafo_formatado)
-  }catch(err){
-    if (err.message === 'NOT_FOUND') return res.status(404).json({ erro: 'não existe um grafo com esse id'})
-    if (err.message === 'FORBIDDEN') return res.status(403).json({ erro: 'esse grafo não pertence a esse usuário'})
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
+  } catch (err) {
+    if (err.message === 'NOT_FOUND')
+      return res.status(404).json({ erro: 'não existe um grafo com esse id' })
+    if (err.message === 'FORBIDDEN')
+      return res
+        .status(403)
+        .json({ erro: 'esse grafo não pertence a esse usuário' })
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
 }
 
@@ -97,17 +108,17 @@ const update_grafo_id = async (req, res) => {
  * @returns {500} On internal server error.
  */
 const dijkstra_list = async (req, res) => {
-  const {edges, n, source, destination} = req.body
-    
-  try{
+  const { edges, n, source, destination } = req.body
+
+  try {
     const graph = new GraphList(edges, n)
 
     const parent_cost = dijkstra(graph, source)
     const path_cost = follow_path(parent_cost, destination)
 
     return res.status(200).json(path_cost)
-  }catch(err){
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
+  } catch (err) {
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
 }
 
@@ -121,17 +132,17 @@ const dijkstra_list = async (req, res) => {
  * @returns {500} On internal server error.
  */
 const dijkstra_matrix = async (req, res) => {
-  const {edges, n, source, destination} = req.body
-    
-  try{
+  const { edges, n, source, destination } = req.body
+
+  try {
     const graph = new GraphMatrix(edges, n)
 
     const parent_cost = dijkstra(graph, source)
     const path_cost = follow_path(parent_cost, destination)
 
     return res.status(200).json(path_cost)
-  }catch(err){
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
+  } catch (err) {
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
 }
 
@@ -149,15 +160,15 @@ const create_graph = async (req, res) => {
   const { name } = req.body
   const { id } = req.user_info
 
-  try{
+  try {
     const graph = new Graph(name, id)
 
     await graph.create()
 
     const grafo_formatado = graph.to_object()
     return res.status(200).json(grafo_formatado)
-  }catch{
-    return res.status(500).json({ erro: 'erro interno no servidor. '})
+  } catch {
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
 }
 
@@ -172,17 +183,17 @@ const create_graph = async (req, res) => {
  * @returns {500} On internal server error.
  */
 const adjacency_matrix = async (req, res) => {
-  const { edges, n } = req.body;
+  const { edges, n } = req.body
 
   try {
-    const graph = new GraphMatrix(edges, n);
-    console.log(graph);
+    const graph = new GraphMatrix(edges, n)
+    console.log(graph)
 
-    return res.status(200).json(graph.to_object());
+    return res.status(200).json(graph.to_object())
   } catch {
-    return res.status(500).json({ erro: 'erro interno no servidor. ' });
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
-};
+}
 
 /**
  * Generates an adjacency list representation of a graph.
@@ -195,16 +206,16 @@ const adjacency_matrix = async (req, res) => {
  * @returns {500} On internal server error.
  */
 const adjacency_list = async (req, res) => {
-  const { edges, n } = req.body;
+  const { edges, n } = req.body
 
   try {
-    const graph = new GraphList(edges, n);
+    const graph = new GraphList(edges, n)
 
-    return res.status(200).json(graph.to_object());
+    return res.status(200).json(graph.to_object())
   } catch {
-    return res.status(500).json({ erro: 'erro interno no servidor. ' });
+    return res.status(500).json({ erro: 'erro interno no servidor. ' })
   }
-};
+}
 
 export default {
   grafo_id,
@@ -213,5 +224,5 @@ export default {
   dijkstra_matrix,
   create_graph,
   adjacency_matrix,
-  adjacency_list
+  adjacency_list,
 }
